@@ -815,7 +815,7 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
         <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
           {[["active","생리중",P.pink,"#FF75CF"],["pms","PMS",P.lavender,"#253A82"],["irregular","부정출혈",P.pink,"#FF75CF"]].map(([f,label,bg,txt])=>(
             <button key={f} onClick={()=>{if(!log.period)setField("period",{active:false,pms:false,irregular:false,flow:null,pain:[]});setNested("period",f,!(log.period?.[f]));}}
-              style={{height:BTN_H.pill,padding:"0 16px",paddingTop:2,borderRadius:20,fontWeight:600,fontSize:12,display:"inline-flex",alignItems:"center",cursor:"pointer",transition:"all 0.15s",
+              style={{height:BTN_H.pill,padding:"0 16px",paddingTop:3.5,paddingBottom:1.5,borderRadius:20,fontWeight:600,fontSize:12,display:"inline-flex",alignItems:"center",cursor:"pointer",transition:"all 0.15s",
                 background:log.period?.[f]?bg+"30":"#f5f6fb",
                 border:log.period?.[f]?`1.5px solid ${bg}`:"1.5px solid #e2e8f0",
                 color:log.period?.[f]?txt:"#9ca3af",
@@ -842,7 +842,7 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
               <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                 {PERIOD_PAIN.map(p=>{const on=(log.period?.pain||[]).includes(p.id);return(
                   <button key={p.id} onClick={()=>toggleNestedArr("period","pain",p.id)}
-                    style={{height:BTN_H.pill,padding:"0 14px",paddingTop:3,borderRadius:20,fontWeight:on?700:400,fontSize:12,display:"inline-flex",alignItems:"center",gap:4,cursor:"pointer",transition:"all 0.15s",
+                    style={{height:BTN_H.pill,padding:"0 14px",paddingTop:3,paddingBottom:1.5,borderRadius:20,fontWeight:on?700:400,fontSize:12,display:"inline-flex",alignItems:"center",gap:4,cursor:"pointer",transition:"all 0.15s",
                       background:on?P.pink+"30":"#f5f6fb",
                       border:on?`1.5px solid ${P.pink}`:"1.5px solid #e2e8f0",
                       color:on?"#FF75CF":"#9ca3af",

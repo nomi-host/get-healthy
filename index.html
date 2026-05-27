@@ -24,7 +24,7 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel" data-presets="react,env">
+  <script type="text/babel" data-presets="react">
 const { useState, useRef, useEffect } = React;
 
 const DAY_KR = ["일","월","화","수","목","금","토"];
@@ -330,6 +330,10 @@ function App() {
   const swipeX=useRef(0), swipeY=useRef(0);
   const [pullDist, setPullDist] = useState(0);
   const pullRef = useRef(0);
+  const tabRef = useRef(tab);
+  const weekIdxRef = useRef(weekIdx);
+  useEffect(()=>{tabRef.current=tab;},[tab]);
+  useEffect(()=>{weekIdxRef.current=weekIdx;},[weekIdx]);
 
   useEffect(()=>{
     const onStart = e => {
@@ -341,9 +345,9 @@ function App() {
       const dy = e.touches[0].clientY - swipeY.current;
       const dx = e.touches[0].clientX - swipeX.current;
       const atTop = (window.scrollY||document.documentElement.scrollTop||0) <= 0;
-      if(dy > 8 && Math.abs(dy) > Math.abs(dx) * 1.2 && atTop){
+      if(dy > 5 && Math.abs(dy) > Math.abs(dx) && atTop){
         e.preventDefault();
-        const d = Math.min(dy * 0.6, 80);
+        const d = Math.min(dy * 0.65, 80);
         pullRef.current = d;
         setPullDist(d);
       }
@@ -354,16 +358,17 @@ function App() {
       const pulled = pullRef.current;
       pullRef.current = 0;
       setPullDist(0);
-      // 세로 당겨서 새로고침
-      if(pulled > 55){
-        window.location.reload();
+      const atTop = (window.scrollY||document.documentElement.scrollTop||0) <= 0;
+      // pullRef 또는 직접 dy로 이중 체크
+      if((pulled > 35 || (dy > 60 && Math.abs(dy) > Math.abs(dx)*1.5)) && atTop){
+        setTimeout(()=>{ try{location.reload();}catch(e){window.location.href=window.location.href;} }, 80);
         return;
       }
-      // 가로 스와이프 → 주차 이동 (주간기록 탭만)
-      if(tab !== "week") return;
+      if(tabRef.current !== "week") return;
       if(Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-      if(dx < 0 && weekIdx < INJECTIONS.length-1){const ni=weekIdx+1;setWeekIdx(ni);setSelDay(INJECTIONS[ni].key);setEditing(false);}
-      else if(dx > 0 && weekIdx > 0){const ni=weekIdx-1;setWeekIdx(ni);setSelDay(INJECTIONS[ni].key);setEditing(false);}
+      const wi = weekIdxRef.current;
+      if(dx < 0 && wi < INJECTIONS.length-1){const ni=wi+1;setWeekIdx(ni);setSelDay(INJECTIONS[ni].key);setEditing(false);}
+      else if(dx > 0 && wi > 0){const ni=wi-1;setWeekIdx(ni);setSelDay(INJECTIONS[ni].key);setEditing(false);}
     };
     document.addEventListener('touchstart', onStart, {passive:true});
     document.addEventListener('touchmove',  onMove,  {passive:false});
@@ -373,7 +378,7 @@ function App() {
       document.removeEventListener('touchmove',  onMove);
       document.removeEventListener('touchend',   onEnd);
     };
-  },[tab, weekIdx]);
+  },[]);
   const INIT_INJM=Object.fromEntries(INJECTIONS.map(i=>[i.key,{weight:i.weight||null,muscle:i.muscle||null,bodyFat:i.bodyFat||null,waist:i.waist||null}]));
   const [injM, setInjM] = useState(()=>{
     try{const s=localStorage.getItem('ml_injm');return s?{...INIT_INJM,...JSON.parse(s)}:INIT_INJM;}
@@ -419,13 +424,26 @@ function App() {
     <div style={{minHeight:"100vh",background:"#f5f6fb",fontFamily:"'Apple SD Gothic Neo','Noto Sans KR',sans-serif",maxWidth:430,margin:"0 auto"}}>
 
       {/* 당겨서 새로고침 인디케이터 */}
-      {pullDist>20&&(
-        <div style={{position:"fixed",top:0,left:"50%",transform:"translateX(-50%)",
-          background:P.neon,color:P.navy,padding:"6px 18px",borderRadius:"0 0 14px 14px",
-          fontSize:11,fontWeight:700,zIndex:9999,
-          opacity:Math.min(pullDist/60,1),lineHeight:1,paddingTop:8,
-          boxShadow:"0 2px 8px rgba(0,0,0,0.1)"}}>
-          {pullDist>70?"놓으면 새로고침":"당겨서 새로고침"}
+      {pullDist>0&&(
+        <div style={{position:"fixed",top:0,left:0,height:3,zIndex:10000,pointerEvents:"none",
+          width:`${Math.min(pullDist/40*100,100)}%`,
+          background:"#fff",borderRadius:"0 2px 2px 0"}}/>
+      )}
+      {pullDist>5&&(
+        <div style={{
+          position:"fixed",
+          top:"max(54px,calc(env(safe-area-inset-top) + 8px))",
+          left:"50%",transform:"translateX(-50%)",
+          background:P.neon,color:P.navy,
+          paddingTop:10,paddingBottom:7,paddingLeft:20,paddingRight:20,
+          borderRadius:999,
+          fontSize:11,fontWeight:700,lineHeight:1,
+          zIndex:9999,pointerEvents:"none",
+          opacity:Math.min(pullDist/40,1),
+          boxShadow:"0 4px 16px rgba(0,0,0,0.14)",
+          whiteSpace:"nowrap",
+        }}>
+          {pullDist>40?"↑ 놓으면 새로고침":"↓ 당겨서 새로고침"}
         </div>
       )}
 
@@ -551,7 +569,7 @@ function App() {
                 <span style={{fontWeight:700,fontSize:17,color:"#1f2937",lineHeight:1}}>{disp(selDay)}</span>
                 <span style={{fontSize:13,color:"#9ca3af",lineHeight:1}}>{dow(selDay)}요일</span>
                 {injDay&&(
-                  <span style={{background:P.neon,color:P.navy,fontSize:10,height:24,padding:"0 10px",paddingTop:1,borderRadius:20,fontWeight:700,lineHeight:1,display:"inline-flex",alignItems:"center",gap:3,border:"1px solid rgba(37,58,130,0.25)"}}>
+                  <span style={{background:P.neon,color:P.navy,fontSize:10,height:24,padding:"0 10px",paddingTop:2,paddingBottom:0,borderRadius:20,fontWeight:700,lineHeight:1,display:"inline-flex",alignItems:"center",gap:3,border:"1px solid rgba(37,58,130,0.25)"}}>
                     💉 투약일{injDay.isDoseChange?" 🔼":""}
                   </span>
                 )}
@@ -677,7 +695,7 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
     border:`1.5px solid ${on?(c||theme.activeBdr):"#e2e8f0"}`,
     background: on?(c?c+"20":theme.activeBg):"#f5f6fb",
     color: on?(c||theme.activeTxt):"#9ca3af",
-    cursor:"pointer",transition:"all 0.15s",paddingTop:1,
+    cursor:"pointer",transition:"all 0.15s",paddingTop:2,paddingBottom:0,
   });
 
   return (
@@ -687,11 +705,11 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
         <Card title="💉 투약 여부">
           <div style={{display:"flex",gap:8,marginBottom:12}}>
             <button onClick={()=>setField("customInj",null)}
-              style={{...ab(!log.customInj?.active),flex:1,height:BTN_H.row,borderRadius:12,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:1}}>
+              style={{...ab(!log.customInj?.active),flex:1,height:BTN_H.row,borderRadius:12,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:2,paddingBottom:0}}>
               투약 안 함
             </button>
             <button onClick={()=>!log.customInj?.active&&setField("customInj",{active:true,dose:"5.0",weight:"",bodyFat:"",waist:"",muscle:""})}
-              style={{...ab(!!log.customInj?.active,P.blue),flex:1,height:BTN_H.row,borderRadius:12,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:1}}>
+              style={{...ab(!!log.customInj?.active,P.blue),flex:1,height:BTN_H.row,borderRadius:12,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:2,paddingBottom:0}}>
               💉 투약함
             </button>
           </div>
@@ -702,7 +720,7 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
                 <div style={{display:"flex",gap:8}}>
                   {["2.5","5.0"].map(d=>(
                     <button key={d} onClick={()=>setNested("customInj","dose",d)}
-                      style={{...ab(log.customInj.dose===d,P.blue),flex:1,height:BTN_H.row,borderRadius:10,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:1}}>
+                      style={{...ab(log.customInj.dose===d,P.blue),flex:1,height:BTN_H.row,borderRadius:10,fontWeight:600,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",paddingTop:2,paddingBottom:0}}>
                       {d}mg
                     </button>
                   ))}
@@ -829,7 +847,7 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
               <div style={{display:"flex",gap:6}}>
                 {PERIOD_FLOW.map(f=>{const on=log.period?.flow===f.id;return(
                   <button key={f.id} onClick={()=>setNested("period","flow",on?null:f.id)}
-                    style={{flex:1,height:BTN_H.row,borderRadius:10,fontWeight:600,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",paddingTop:3,transition:"all 0.15s",
+                    style={{flex:1,height:BTN_H.row,borderRadius:10,fontWeight:600,fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",paddingTop:3,paddingBottom:0,transition:"all 0.15s",
                       background:on?P.pink+"30":"#f5f6fb",
                       border:on?`1.5px solid ${P.pink}`:"1.5px solid #e2e8f0",
                       color:on?"#FF75CF":"#9ca3af",
@@ -1025,7 +1043,7 @@ function HistoryView({injections,injM,goals,setGoals,logs,onSelectWeek}) {
         width:"100%",height:44,borderRadius:14,border:`1.5px solid ${P.navy}`,
         background:"#fff",color:P.navy,fontWeight:700,fontSize:13,cursor:"pointer",
         lineHeight:1,display:"flex",alignItems:"center",justifyContent:"center",gap:8,
-        marginBottom:14,paddingTop:1,
+        marginBottom:14,paddingTop:2,paddingBottom:0,
       }}>
         전체 기록 PDF 추출
       </button>
@@ -1122,8 +1140,8 @@ function HistoryView({injections,injM,goals,setGoals,logs,onSelectWeek}) {
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8}}>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6,flexWrap:"wrap"}}>
-                  <span style={{background:t.hBg,color:t.hText,fontSize:10,height:22,padding:"0 10px",paddingTop:1,borderRadius:20,fontWeight:700,lineHeight:1,display:"inline-flex",alignItems:"center",flexShrink:0}}>{inj.week}주차</span>
-                  {inj.isDoseChange&&<span style={{background:P.neon,color:P.navy,fontSize:10,height:22,padding:"0 8px",paddingTop:1,borderRadius:20,fontWeight:800,lineHeight:1,display:"inline-flex",alignItems:"center",flexShrink:0}}>5.0mg 시작</span>}
+                  <span style={{background:t.hBg,color:t.hText,fontSize:10,height:22,padding:"0 10px",paddingTop:2,paddingBottom:0,borderRadius:20,fontWeight:700,lineHeight:1,display:"inline-flex",alignItems:"center",flexShrink:0}}>{inj.week}주차</span>
+                  {inj.isDoseChange&&<span style={{background:P.neon,color:P.navy,fontSize:10,height:22,padding:"0 8px",paddingTop:2,paddingBottom:0,borderRadius:20,fontWeight:800,lineHeight:1,display:"inline-flex",alignItems:"center",flexShrink:0}}>5.0mg 시작</span>}
                   <span style={{fontSize:11,color:"#9ca3af",lineHeight:1}}>{disp(inj.key)} · {inj.dose}mg · {inj.pen}번펜 {inj.shot}회차</span>
                 </div>
                 <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>

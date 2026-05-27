@@ -312,9 +312,23 @@ function SvgChart({data, dataKey, color="#88A2FF", unit="", doseChangeWeek=null,
 }
 
 // ── App ───────────────────────────────────────────────────────
+function todayKey(){
+  const d=new Date();
+  return String(d.getFullYear()).slice(-2)+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+}
+function initWeekState(){
+  const tk=todayKey();
+  // 오늘 날짜가 포함되는 주차 찾기 (오늘 >= 투약일 인 마지막 주)
+  let wi=0;
+  for(let i=0;i<INJECTIONS.length;i++){ if(INJECTIONS[i].key<=tk) wi=i; else break; }
+  // 해당 주의 7일 안에 오늘이 있으면 selDay=오늘, 없으면 투약일
+  const days=Array.from({length:7},(_,i)=>shift(INJECTIONS[wi].key,i));
+  return {wi, sd: days.includes(tk)?tk:INJECTIONS[wi].key};
+}
+const _init=initWeekState();
 function App() {
-  const [weekIdx,setWeekIdx]=useState(INJECTIONS.length-1);
-  const [selDay, setSelDay] =useState(INJECTIONS[INJECTIONS.length-1].key);
+  const [weekIdx,setWeekIdx]=useState(_init.wi);
+  const [selDay, setSelDay] =useState(_init.sd);
   const [tab,    setTab]    =useState("week");
   const [logs, setLogs] = useState(()=>{
     try{const s=localStorage.getItem('ml_logs');return s?JSON.parse(s):INIT_LOGS;}

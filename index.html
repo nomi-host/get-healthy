@@ -20,6 +20,8 @@
     input,textarea{-webkit-user-select:text;user-select:text;font-size:16px!important}
     header{padding-top:max(44px,env(safe-area-inset-top))!important}
     nav{padding-bottom:env(safe-area-inset-bottom)}
+    /* 한국어 폰트 수직 정렬 보정 – 모든 버튼에 일괄 적용 (인라인 스타일 덮어씀) */
+    button{padding-top:0.12em!important;padding-bottom:0!important}
   </style>
 </head>
 <body>
@@ -472,7 +474,7 @@ function App() {
               <div style={{flex:1,minHeight:92,display:"flex",flexDirection:"column",justifyContent:"flex-start"}}>
                 <div style={{height:22,display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
                   <span style={{color:theme.hText,fontSize:12,fontWeight:600,lineHeight:1}}>{inj.dose}mg · {inj.pen}번펜 {inj.shot}회차</span>
-                  {inj.isDoseChange&&<span style={{background:P.neon,color:P.navy,fontSize:10,padding:"0 9px",paddingTop:2,paddingBottom:0,height:20,borderRadius:20,fontWeight:800,lineHeight:1,display:"inline-flex",alignItems:"center",position:"relative",top:-2}}>🔼 용량 증량</span>}
+                  {inj.isDoseChange&&<span style={{background:P.neon,color:P.navy,fontSize:10,padding:"0.12em 9px 0",height:20,borderRadius:20,fontWeight:800,lineHeight:1,display:"inline-flex",alignItems:"center",position:"relative",top:-2}}>🔼 용량 증량</span>}
                 </div>
                 <div style={{color:theme.wkColor,fontSize:30,fontWeight:800,lineHeight:1,marginBottom:6}}>전체 {inj.week}주차</div>
                 <div style={{color:theme.hSub,fontSize:12,lineHeight:1}}>투약일 {disp(inj.key)} ({dow(inj.key)})</div>
@@ -1188,7 +1190,7 @@ function Chip({label,color,tc}) {
   return (
     <span style={{
       display:"inline-flex",alignItems:"center",
-      padding:"5px 12px 3px",   // 한국어 폰트 보정: top 살짝 크게
+      padding:"0.42em 12px 0.28em",
       borderRadius:20,fontSize:12,fontWeight:600,lineHeight:1,
       background:color?color+"22":"#f0f5ff",
       color:tc||(color||P.navy),

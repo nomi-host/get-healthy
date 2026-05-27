@@ -20,7 +20,6 @@
     input,textarea{-webkit-user-select:text;user-select:text;font-size:16px!important}
     header{padding-top:max(44px,env(safe-area-inset-top))!important}
     nav{padding-bottom:env(safe-area-inset-bottom)}
-    /* 한국어 폰트 수직 정렬 보정 – 모든 버튼에 일괄 적용 (인라인 스타일 덮어씀) */
     button{padding-top:0.12em!important;padding-bottom:0!important}
   </style>
 </head>
@@ -549,6 +548,8 @@ function App() {
               const l=logs[dk]||{};
               const dj=INJ[dk],isInj=!!dj,isSel=dk===selDay;
               const dt=getTheme(dj?.dose||inj.dose);
+              const isCustomInj=!isInj&&!!l?.customInj?.active;
+              const isHighlighted=isInj||isCustomInj;
               const hasBleeding=l?.bowel?.bleeding;
               const hasBS=l?.bowel?.bloodInStool,isDia=(l?.bowel?.bristol||0)>=6;
               const isPainful=l?.bowel?.painful,hasPeriod=l?.period?.active;
@@ -558,13 +559,14 @@ function App() {
                 <div key={dk} onClick={()=>{setSelDay(dk);setEditing(false);}} style={{
                   flex:"1 1 0",minWidth:36,height:62,borderRadius:12,cursor:"pointer",
                   display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,
-                  background:isSel?P.navy:isInj?P.neon:"#f5f6fb",
-                  border:isInj&&!isSel?`1.5px solid ${P.navy}`:"1.5px solid transparent",
+                  background:isSel?P.navy:isHighlighted?P.neon:"#f5f6fb",
+                  border:isHighlighted&&!isSel?`1.5px solid ${P.navy}`:"1.5px solid transparent",
                   transition:"all 0.15s",boxSizing:"border-box",
                 }}>
-                  <span style={{fontSize:9,color:isSel?"rgba(255,255,255,0.65)":isInj?P.navy:"#aaa",lineHeight:1}}>{dow(dk)}</span>
-                  <span style={{fontSize:14,fontWeight:isSel?700:500,color:isSel?"#fff":isInj?P.navy:"#374151",lineHeight:1}}>{parseInt(dk.slice(4,6))}</span>
+                  <span style={{fontSize:9,color:isSel?"rgba(255,255,255,0.65)":isHighlighted?P.navy:"#aaa",lineHeight:1}}>{dow(dk)}</span>
+                  <span style={{fontSize:14,fontWeight:isSel?700:500,color:isSel?"#fff":isHighlighted?P.navy:"#374151",lineHeight:1}}>{parseInt(dk.slice(4,6))}</span>
                   {isInj&&<span style={{fontSize:8,lineHeight:1,color:isSel?P.neon:P.navy,fontWeight:700}}>💉</span>}
+                  {isCustomInj&&<span style={{fontSize:8,lineHeight:1,color:isSel?P.neon:P.navy,fontWeight:700}}>💉</span>}
                   <div style={{display:"flex",justifyContent:"center",gap:1,flexWrap:"wrap",minHeight:9,alignItems:"center"}}>
                     {isPainful&&<span style={{fontSize:7,lineHeight:1}}>😖</span>}
                     {hasBleeding&&<span style={{fontSize:7,lineHeight:1}}>🔴</span>}

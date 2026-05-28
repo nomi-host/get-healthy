@@ -20,7 +20,7 @@
     input,textarea{-webkit-user-select:text;user-select:text;font-size:16px!important}
     header{padding-top:max(44px,env(safe-area-inset-top))!important}
     nav{padding-bottom:env(safe-area-inset-bottom)}
-    button{padding-top:0.12em!important;padding-bottom:0!important}
+    /* button !important 규칙 제거 – 미리보기/웹앱 불일치 원인 */
   </style>
 </head>
 <body>
@@ -491,9 +491,17 @@ function App() {
               </div>
             </div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12,height:34}}>
-              <button onClick={goPrev} style={{background:theme.hNavBtn,border:"none",borderRadius:10,width:34,height:34,cursor:weekIdx>0?"pointer":"default",color:weekIdx>0?theme.hNavTxt:"rgba(128,128,128,0.3)",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>‹</button>
+              <button onClick={goPrev} style={{background:weekIdx>0?P.navy:`${P.navy}35`,border:"none",borderRadius:"50%",width:34,height:34,cursor:weekIdx>0?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <svg width="11" height="17" viewBox="0 0 11 17" fill="none">
+                  <polyline points="7,1.5 1,8.5 7,15.5" stroke="white" strokeWidth="1.5" opacity={weekIdx>0?1:0.35}/>
+                </svg>
+              </button>
               <div/>
-              <button onClick={goNext} style={{background:theme.hNavBtn,border:"none",borderRadius:10,width:34,height:34,cursor:weekIdx<INJECTIONS.length-1?"pointer":"default",color:weekIdx<INJECTIONS.length-1?theme.hNavTxt:"rgba(128,128,128,0.3)",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>›</button>
+              <button onClick={goNext} style={{background:weekIdx<INJECTIONS.length-1?P.navy:`${P.navy}35`,border:"none",borderRadius:"50%",width:34,height:34,cursor:weekIdx<INJECTIONS.length-1?"pointer":"default",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <svg width="11" height="17" viewBox="0 0 11 17" fill="none">
+                  <polyline points="2,1.5 8,8.5 2,15.5" stroke="white" strokeWidth="1.5" opacity={weekIdx<INJECTIONS.length-1?1:0.35}/>
+                </svg>
+              </button>
             </div>
           </>
         ):(

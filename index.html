@@ -436,7 +436,7 @@ function App() {
   const goNext=()=>{if(weekIdx<INJECTIONS.length-1){setWeekIdx(w=>w+1);setSelDay(INJECTIONS[weekIdx+1].key);setEditing(false);}};
 
   return (
-    <div style={{minHeight:"100vh",background:"#f5f6fb",fontFamily:"'Apple SD Gothic Neo','Apple SD Gothic Neo','Noto Sans KR',sans-serif",maxWidth:430,margin:"0 auto"}}>
+    <div style={{minHeight:"100vh",background:"#f5f6fb",fontFamily:"'Apple SD Gothic Neo','Noto Sans KR',sans-serif",maxWidth:430,margin:"0 auto"}}>
 
       {/* 당겨서 새로고침 인디케이터 */}
       {pullDist>0&&(
@@ -601,7 +601,7 @@ function App() {
                 )}
               </div>
               {!editing&&(
-                <button onClick={startEdit} style={{background:P.navy,color:"#fff",border:"none",borderRadius:10,height:BTN_H.small,padding:"0 14px",fontSize:12,fontWeight:700,cursor:"pointer",lineHeight:1,display:"inline-flex",alignItems:"center",gap:5,flexShrink:0,paddingTop:3}}>
+                <button onClick={startEdit} style={{background:P.navy,color:"#fff",border:"none",borderRadius:10,height:BTN_H.small,padding:"0 14px",fontSize:12,fontWeight:700,cursor:"pointer",lineHeight:1,display:"inline-flex",alignItems:"center",gap:5,flexShrink:0,paddingTop:3,paddingBottom:4}}>
                   ✏️ 기록
                 </button>
               )}
@@ -859,7 +859,7 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
         <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
           {[["active","생리중",P.pink,"#FF75CF"],["pms","PMS",P.lavender,"#253A82"],["irregular","부정출혈",P.pink,"#FF75CF"]].map(([f,label,bg,txt])=>(
             <button key={f} onClick={()=>{if(!log.period)setField("period",{active:false,pms:false,irregular:false,flow:null,pain:[]});setNested("period",f,!(log.period?.[f]));}}
-              style={{height:BTN_H.pill,padding:"0 16px",paddingTop:3.5,paddingBottom:1.5,borderRadius:20,fontWeight:600,fontSize:12,display:"inline-flex",alignItems:"center",cursor:"pointer",transition:"all 0.15s",
+              style={{height:BTN_H.pill,padding:"0 16px",paddingTop:3.5,paddingBottom:4.5,borderRadius:20,fontWeight:600,fontSize:12,display:"inline-flex",alignItems:"center",cursor:"pointer",transition:"all 0.15s",
                 background:log.period?.[f]?bg+"30":"#f5f6fb",
                 border:log.period?.[f]?`1.5px solid ${bg}`:"1.5px solid #e2e8f0",
                 color:log.period?.[f]?txt:"#9ca3af",
@@ -901,7 +901,7 @@ function EditForm({log,injF,setInjF,isInjDay,curM,theme,setField,toggleArr,setNe
       <Card title="😴 수면">
         <div style={{display:"flex",gap:5}}>
           {SLEEP_OPT.map(s=>{const on=log.sleep===s.v;return(
-            <button key={s.v} onClick={()=>setField("sleep",on?null:s.v)} style={{...ab(on,s.color),flex:1,height:50,borderRadius:10,fontWeight:on?700:400,fontSize:10,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",lineHeight:1.3}}>{s.label}</button>
+            <button key={s.v} onClick={()=>setField("sleep",on?null:s.v)} style={{...ab(on,s.color),flex:1,height:50,borderRadius:10,fontWeight:on?700:400,fontSize:12,display:"flex",alignItems:"center",justifyContent:"center",textAlign:"center",lineHeight:1.3}}>{s.label}</button>
           );})}
         </div>
       </Card>

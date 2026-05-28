@@ -20,8 +20,13 @@
     input,textarea{-webkit-user-select:text;user-select:text;font-size:16px!important}
     header{padding-top:max(44px,env(safe-area-inset-top))!important}
     nav{padding-bottom:env(safe-area-inset-bottom)}
-    /* iOS Safari 기본 버튼 appearance 제거 → Chrome/미리보기와 동일하게 */
+    /* iOS Safari appearance 초기화 */
     button{-webkit-appearance:none;appearance:none}
+    /* iOS Safari 전용 보정: Apple SD Gothic Neo 폰트 메트릭 차이 보상
+       아이폰에서 텍스트가 아래로 치우쳐 보일 때 → padding-bottom으로 위로 올림 */
+    @supports (-webkit-touch-callout: none){
+      button{padding-bottom:1px!important}
+    }
   </style>
 </head>
 <body>

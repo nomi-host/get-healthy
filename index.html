@@ -162,16 +162,15 @@ react-dom/cjs/react-dom-client.production.js:
     b.setAttribute('style', [
       'position:fixed', 'top:0', 'left:0', 'right:0', 'z-index:99999',
       'background:#253A82', 'color:#E3FC87',
-      'padding:calc(10px + env(safe-area-inset-top)) 14px 10px',
+      'padding:calc(18px + env(safe-area-inset-top)) 16px 18px',
       'display:flex', 'align-items:center', 'gap:10px',
       'font-size:13px', 'font-weight:700', 'line-height:1.4', 'cursor:pointer',
       'box-shadow:0 4px 16px rgba(0,0,0,.18)',
       'font-family:-apple-system,BlinkMacSystemFont,\"Apple SD Gothic Neo\",sans-serif'
     ].join(';'));
     b.innerHTML =
-      '<span style="flex-shrink:0;background:#E3FC87;color:#253A82;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800;">(new)</span>' +
-      '<span style="flex:1;min-width:0;">앱의 새 버전이 나왔어요. 눌러서 새로고침 해주세요.</span>' +
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><path d="M11.86 1 L11.45 1.34 L11.38 1.82 L12 3.94 L12.2 7.42 L11.59 9.95 L10.29 11.45 L9.61 11.8 L8.58 11.8 L7.9 11.32 L7.49 10.7 L7.49 7.97 L7.22 7.7 L6.67 7.7 L6.26 7.97 L5.03 9.34 L3.87 11.66 L3.39 14.05 L3.46 16.58 L3.87 18.29 L5.03 20.4 L6.4 21.84 L8.24 23 L8.79 22.8 L8.31 21.36 L8.24 20.06 L8.92 18.35 L9.88 17.4 L11.25 16.85 L12.75 16.85 L13.84 17.26 L15.07 18.35 L15.48 19.11 L15.76 20.81 L15.21 22.8 L15.76 23 L17.94 21.5 L18.9 20.4 L19.86 18.76 L20.61 15.69 L20.47 12.68 L19.51 9.27 L17.74 6.12 L16.58 4.69 L13.98 2.16 L12.55 1.14 Z" fill="#E3FC87"/></svg>';
+      '<span style="flex-shrink:0;display:inline-flex;align-items:center;background:#E3FC87;color:#253A82;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800;line-height:1.4;">new</span>' +
+      '<span style="flex:1;min-width:0;">앱의 새 버전이 나왔어요. 눌러서 새로고침 해주세요.</span>';
     b.onclick = function () { window.location.reload(); };
     document.body.appendChild(b);
   }

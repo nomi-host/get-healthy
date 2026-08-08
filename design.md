@@ -621,9 +621,15 @@ def net(s):  # 문자열 리터럴 무시하고 괄호만 계수
 
 ![아이콘 세트](docs/design-assets/icons.png)
 
-- **`A2`** (복약/활동) — `pill*`, `syringe*`, `dining*`, `drop*`, `kit*`, `bottle*`,
-  `drinking`, `cardio`, `strength`, `travel`, `biztrip`
-  (`*` = 구글 Material Symbols 실데이터)
+- **`A2`** (복약/활동/공용) — `pill*`, `syringe*`, `dining*`, `drop*`, `kit*`, `bottle*`,
+  `back*`, `drinking`, `cardio`, `strength`, `travel`, `biztrip`
+  (`*` = 구글 Material Symbols 실데이터 · 이들은 `fillRule:"nonzero"` 목록에 넣어야 함)
+
+  `back`은 모달의 되돌아가기 버튼 4곳(투약 스케줄 관리 / 복약 설정 / 데이터 관리 /
+  목표 수정)이 공유합니다. Material Symbols `undo`(rounded 400) 원본을 변환한 것.
+  `A2`에는 텍스트 옆 정렬용 `marginTop:-2`가 박혀 있어서, **아이콘만 있는 버튼**에 쓰면
+  옆 요소보다 1px 떠 보입니다. `<span style="display:flex;position:relative;top:1">`으로
+  감싸 상쇄하세요 (측정으로 확인함 — §0 규칙).
 - **`D2`** (증상) — `nausea, vomiting, bodyache, heat, diarrhea_s, constipation,
   muscle_pain, indigestion, fatigue, hives, cravings, headache, orthostatic,
   brownDischarge, hunger, belch, other` (전부 손으로 그린 경로)

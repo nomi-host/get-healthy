@@ -155,10 +155,24 @@ var TK0={
 ### 폰트 패밀리 (1종 고정)
 
 ```
-'Apple SD Gothic Neo','Noto Sans KR',sans-serif
+'Wanted Sans Variable','Wanted Sans','Apple SD Gothic Neo','Noto Sans KR',sans-serif
 ```
 
-React 본문·업데이트 배너·토스트 전부 동일. 새 스택을 도입하지 마세요.
+**Wanted Sans Variable** (Wanted Lab, OFL) 을 자체 호스팅합니다. 뒤쪽 스택은 폰트 로드
+실패 시 폴백입니다. React 본문·`body`·업데이트 배너·토스트 전부 동일.
+
+- 파일: `fonts/wanted-sans/` — variable + **dynamic subset**(92개 woff2, unicode-range로
+  쪼개져 있어 브라우저가 **실제 쓰는 글자 범위만** 내려받습니다. 앱 전체를 돌아도
+  17개 / 약 360KB, 한 번 받으면 서비스워커 캐시에 영구 보관).
+- CDN을 쓰지 않습니다. 오프라인 PWA라 외부 의존을 만들면 안 되고, 자체 호스팅이라야
+  서비스워커가 캐시할 수 있습니다.
+- `body`에도 `font-family`를 직접 겁니다. React 루트 바깥 요소(업데이트 배너 등)가
+  **Times New Roman으로 떨어지는 것**을 막기 위함입니다 — 실제로 그랬습니다.
+- `font-display:swap` — 로드 전엔 폴백으로 보이다가 교체됩니다.
+
+**서비스워커** (`sw.js`): 폰트 CSS는 `CORE`에 넣어 프리캐시(첫 오프라인 실행에도
+@font-face 규칙이 있어야 함)하되, **실패해도 설치가 막히지 않게** `catch`로 폴백합니다.
+woff2 서브셋은 런타임 핸들러(cache-first)가 요청될 때 캐시에 넣습니다.
 
 > 작은따옴표 문자열 안에서 이 스택을 쓸 땐 폰트명을 **이스케이프된 큰따옴표**로 감싸야
 > 합니다 (`\"Apple SD Gothic Neo\"`). 작은따옴표로 감싸면 문자열이 조기 종료되어

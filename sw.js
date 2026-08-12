@@ -4,13 +4,21 @@
    deployed version changed, the new copy is cached and open pages are told to
    show an "update available" banner. */
 
-var CACHE = 'gethealthy-v1';
-var CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+var CACHE = 'gethealthy-v2';
+/* The font CSS is precached so the very first offline open still has the
+   @font-face rules. The woff2 subsets themselves are fetched on demand (the
+   browser only pulls the unicode ranges actually used) and land in the same
+   cache via the runtime handler below, so they survive offline afterwards. */
+var CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png',
+            './fonts/wanted-sans/WantedSansVariable.css'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE).then(function (c) {
-      return c.addAll(CORE);
+      // core app shell must succeed; the font CSS is best-effort
+      return c.addAll(CORE).catch(function () {
+        return c.addAll(CORE.filter(function (u) { return u.indexOf('/fonts/') === -1; }));
+      });
     }).then(function () {
       return self.skipWaiting();
     })
@@ -94,6 +102,8 @@ self.addEventListener('fetch', function (e) {
   e.respondWith(
     caches.match(req).then(function (cached) {
       if (cached) return cached;
+      // font subsets are content-addressed by filename and never change, so a
+      // cache miss simply fetches once and stores forever
       return fetch(req).then(function (resp) {
         if (resp && resp.ok) {
           var copy = resp.clone();

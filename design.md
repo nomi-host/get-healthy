@@ -427,7 +427,6 @@ if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))return;
 background:"rgba(255,255,255,0.5)"
 ```
 
-![필요시 그룹 + 상세 펼침](docs/design-assets/screen-meds-prn.png)
 
 ---
 
@@ -499,7 +498,6 @@ border:"1.5px solid #F19AB0", background:"#FDECF1", color:"#D6469E"
 선택지가 정해진 약은 `doseOpts` 맵에 id를 등록해 `<select>`로, 그 외에는 자유입력
 `<input>`으로 렌더됩니다.
 
-![복약 편집 — 기본 상태](docs/design-assets/screen-meds-edit.png)
 
 ### 6-5. 헤더 (3개 탭 공통)
 
@@ -737,25 +735,12 @@ input,textarea{font-size:16px}
 
 ## 10. 화면 스크린샷
 
-### 홈 / 일일 기록
-![홈](docs/design-assets/screen-home.png)
+**2026-09-10 제거됨.** 이 절의 스크린샷 7장이 실제 사용자의 건강기록(복약 실명·용량·
+체중·체지방·증상·배변 상세)을 그대로 담고 있었습니다 — 데모/목업 데이터가 아니라
+진짜 개인 데이터였고, 이 저장소는 처음부터 계속 public이라 5주 넘게 공개돼 있었습니다.
+지금은 파일을 지우고 git 이력에서도 완전히 제거했습니다(`git filter-repo`).
 
-### 복약 요약 (카테고리별 한 줄)
-![복약 요약](docs/design-assets/screen-meds-summary.png)
-
-### 복약 편집 — 기본 (아침→저녁→필요시, 필요시는 접힘)
-![복약 편집](docs/design-assets/screen-meds-edit.png)
-
-### 복약 편집 — 필요시 펼침 + 항목 상세 펼침
-![필요시](docs/design-assets/screen-meds-prn.png)
-
-### 복약 관리 모달
-![복약 관리](docs/design-assets/screen-med-management.png)
-
-### 전체기록 탭
-![전체기록](docs/design-assets/screen-alltime.png)
-
-### 분석 탭
-![분석](docs/design-assets/screen-analysis.png)
-
-헤더 테마는 전체기록/분석 탭 모두 navy로 통일돼 있습니다.
+각 화면의 실제 모양은 §5~§6의 레시피와 인라인 코드 블록으로 대체합니다. 새로 스크린샷을
+남길 때는 **반드시 실제 계정 데이터가 아니라 목업 데이터로 렌더한 화면만** 커밋할 것 —
+Playwright 검증 스크립트가 이미 하드코딩된 예시 데이터(`localStorage.setItem` 시드)로
+렌더하고 있으니 그 결과물을 쓰면 안전합니다.

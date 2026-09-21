@@ -765,7 +765,10 @@ if (!sa) { dl(); return }          // Safari 탭 → 바로 다운로드(설정�
   감싸 상쇄하세요 (측정으로 확인함 — §0 규칙).
 - **`D2`** (증상) — `nausea, vomiting, bodyache, heat, diarrhea_s, constipation,
   muscle_pain, indigestion, fatigue, hives, cravings, headache, orthostatic,
-  brownDischarge, hunger, belch, other` (전부 손으로 그린 경로)
+  brownDischarge, hunger, belch, other` (전부 손으로 그린 경로) · `anxiety, stress`
+  (2026-09-21 신설 — **`A2`처럼 구글 Material Symbols 실데이터**: `anxiety`=`sentiment_worried`,
+  `stress`=`sentiment_stressed`, 둘 다 Rounded 400·filled. `evenodd`로 문제없이 렌더돼
+  `fillRule:"nonzero"` 목록엔 안 넣었다)
 
 ### 새 아이콘 추가 절차 (CLAUDE.md와 동일)
 
@@ -777,7 +780,10 @@ if (!sa) { dl(); return }          // Safari 탭 → 바로 다운로드(설정�
    ```js
    svgpath(d).translate(0,960).scale(0.025).round(3).toString()
    ```
-4. `A2`의 아이콘 맵에 추가. 렌더가 이상하면 `fillRule` 예외 목록(`evenodd`)에 추가.
+   svgpath 없이 변환한다면 절대좌표는 `x*0.025`, `y=(y+960)*0.025`, **상대좌표(소문자 명령)는
+   평행이동 없이 `*0.025`만** 적용 — 델타값은 이동으로 안 바뀐다(2026-09-21, `anxiety`/`stress`
+   추가 때 직접 구현·원본과 겹쳐 렌더 검증함).
+4. `A2`/`D2`의 아이콘 맵에 추가. 렌더가 이상하면 `fillRule` 예외 목록(`evenodd`)에 추가.
 
 ---
 

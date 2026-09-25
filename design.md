@@ -765,10 +765,39 @@ if (!sa) { dl(); return }          // Safari 탭 → 바로 다운로드(설정�
   감싸 상쇄하세요 (측정으로 확인함 — §0 규칙).
 - **`D2`** (증상) — `nausea, vomiting, bodyache, heat, diarrhea_s, constipation,
   muscle_pain, indigestion, fatigue, hives, cravings, headache, orthostatic,
-  brownDischarge, hunger, belch, other` (전부 손으로 그린 경로) · `anxiety, stress`
-  (2026-09-21 신설 — **`A2`처럼 구글 Material Symbols 실데이터**: `anxiety`=`sentiment_worried`,
-  `stress`=`sentiment_stressed`, 둘 다 Rounded 400·filled. `evenodd`로 문제없이 렌더돼
-  `fillRule:"nonzero"` 목록엔 안 넣었다)
+  brownDischarge, hunger, belch, other` (전부 손으로 그린 경로) · `anxiety, stress, edema`
+
+  **★2026-09-26 재작업 — `anxiety`/`stress`는 Material의 자체 원(써클)을 버리고 이 앱의
+  공유 얼굴 링 템플릿을 쓴다★** 9/21에 Material `sentiment_worried`/`sentiment_stressed`를
+  filled 그대로 썼더니 다른 D2 얼굴들(hollow-line, 지름 22/스트로크 1.5의 같은 원)과 원
+  크기·선 두께가 안 맞았다(Material 자체 원은 지름 19.95). 지금은 **얼굴 표정 부분만**
+  Material Outlined(line) 변형에서 떼어 오고(원래 path에서 자기 원 서브패스를 잘라내고
+  표정 서브패스만 남김), **원(외곽 링)은 `orthostatic`의 첫 두 서브패스(정확히 지름
+  22·스트로크 1.5인 폴리곤)를 그대로 재사용**한다 — 이래야 "다른 얼굴형 아이콘들과 원
+  크기·선 두께가 완전히 같다"가 측정으로 보장된다(같은 폴리곤 바이트를 복사한 것이므로).
+  `stress`의 표정은 Material 원본을 그대로 못 쓰고(어긋나게 배치돼 원 밖으로 삐져나옴)
+  `>‹` 눈 + 관자놀이 지그재그 2개 + 다문 입 막대를 직접 그렸다 — 전부 **양끝 반원 캡**
+  (rounded line-cap)을 적용한 두꺼운 선 폴리곤(끝점 둘레로 반원을 그려 붙이는 방식)이라
+  14px 실사용 크기에서도 눈에 띈다(얇은 stroke는 그 크기에서 사라진다 — 최소 두께 약
+  1.0~1.15 유지할 것).
+  - `edema`(부종, 2026-09-26 신설) — **다른 D2 얼굴들과 달리 유일하게 solid filled**다
+    (사용자 지시: "풍선으로, 까만색, 삼각형 매듭, 라인으로 광택"). 타원 몸통(filled) +
+    광택은 몸통 안에 작은 쐐기 모양을 evenodd로 뚫어 만든 흰 줄(line) + 아래 뾰족한
+    삼각형 매듭(모서리를 살짝만 둥글게, `r`이 크면 매듭인지 안 보이니 0.3~0.4 정도만).
+    매듭 방향은 넓은 변이 풍선 쪽(위), 뾰족한 끝이 아래 — 반대로 하면 "위치 핀"처럼 보여
+    풍선처럼 안 읽힌다(실제로 한 번 반대로 그렸다가 되돌렸다).
+  - 셋 다 `evenodd`로 문제없이 렌더돼 `fillRule:"nonzero"` 목록엔 안 넣었다.
+
+### 심각도(정도) 있는 증상은 하드코딩하지 말고 배열로
+
+`t.symptomLv`(1~3단계: 약함/보통/심함)는 처음엔 `restless`(하지불안)에만 붙어 있었는데,
+2026-09-26에 `anxiety`/`stress`/`edema`도 같은 방식을 쓰게 되면서 **네 곳**(체크 해제 시
+레벨 초기화 · 정도 패널 렌더 · 하루 요약 칩 라벨 · 전체기록 검색 라벨)의 `r.id==="restless"`
+하드코딩을 전부 배열 검사(`["restless","anxiety","stress","edema"].includes(id)`) 또는
+`(t.symptomLv||{})[id]` 형태의 범용 조회로 바꿨다. 정도 패널은 이제 **체크된 leveled 증상마다
+하나씩** `.map()`으로 그려진다(동시에 여러 개 체크해도 각자 독립된 패널 — 실렌더로 하지불안+
+스트레스+부종 3개를 같이 체크해 패널 3개가 각자 다른 상태로 동작함을 확인했다). **새로 정도가
+필요한 증상을 추가하면 이 배열 하나에만 넣으면 된다** — 네 곳을 따로 고칠 필요 없음.
 
 ### 새 아이콘 추가 절차 (CLAUDE.md와 동일)
 

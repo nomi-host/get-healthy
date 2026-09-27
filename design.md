@@ -765,7 +765,7 @@ if (!sa) { dl(); return }          // Safari 탭 → 바로 다운로드(설정�
   감싸 상쇄하세요 (측정으로 확인함 — §0 규칙).
 - **`D2`** (증상) — `nausea, vomiting, bodyache, heat, diarrhea_s, constipation,
   muscle_pain, indigestion, fatigue, hives, cravings, headache, orthostatic,
-  brownDischarge, hunger, belch, other` (전부 손으로 그린 경로) · `anxiety, stress, edema`
+  brownDischarge, hunger, belch, other` (전부 손으로 그린 경로) · `anxiety, stress, depressed, breath, edema`
 
   **★2026-09-26 — `anxiety`/`stress`는 Material 원본을 그대로 쓰되 weight·배율만 맞춘다★**
   9/21엔 `sentiment_worried`/`sentiment_stressed`의 **filled** 변형을 썼는데, 다른 D2
@@ -792,13 +792,17 @@ if (!sa) { dl(); return }          // Safari 탭 → 바로 다운로드(설정�
     광택은 **안쪽 타원 호를 따라 샘플링한 둥근 끝 선**이라 풍선 곡률과 나란하다(직선으로
     그리면 따로 논다).
   - 셋 다 `evenodd`로 문제없이 렌더돼 `fillRule:"nonzero"` 목록엔 안 넣었다.
+  - `depressed`(우울감)·`breath`(숨 답답함) — 2026-09-27 신설. **사용자가 직접 고른 Material Symbols filled 원본**
+    (구름+느낌표 / 마스크형 호흡기)이라 edema처럼 solid다. `svgpath(d).translate(0,960).scale(0.025)` 변환, 배율 1.0
+    (bbox 폭 22·20 — 기존 얼굴 22.05와 맞음). 둘 다 `evenodd`에서 nonzero와 같은 모양으로 렌더됨을 확인.
+    `depressed`는 정도(1~3) 있는 증상 배열에 추가, `breath`는 있음/없음만.
 
 ### 심각도(정도) 있는 증상은 하드코딩하지 말고 배열로
 
 `t.symptomLv`(1~3단계: 약함/보통/심함)는 처음엔 `restless`(하지불안)에만 붙어 있었는데,
 2026-09-26에 `anxiety`/`stress`/`edema`도 같은 방식을 쓰게 되면서 **네 곳**(체크 해제 시
 레벨 초기화 · 정도 패널 렌더 · 하루 요약 칩 라벨 · 전체기록 검색 라벨)의 `r.id==="restless"`
-하드코딩을 전부 배열 검사(`["restless","anxiety","stress","edema"].includes(id)`) 또는
+하드코딩을 전부 배열 검사(`["restless","anxiety","stress","depressed","edema"].includes(id)`) 또는
 `(t.symptomLv||{})[id]` 형태의 범용 조회로 바꿨다. 정도 패널은 이제 **체크된 leveled 증상마다
 하나씩** `.map()`으로 그려진다(동시에 여러 개 체크해도 각자 독립된 패널 — 실렌더로 하지불안+
 스트레스+부종 3개를 같이 체크해 패널 3개가 각자 다른 상태로 동작함을 확인했다). **새로 정도가

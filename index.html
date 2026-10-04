@@ -176,6 +176,116 @@ react-dom/cjs/react-dom-client.production.js:
     document.body.appendChild(b);
   }
 })();
+
+/* ── 집 와이파이 맥 동기화 (2026-10-04) ─────────────────────────────────────
+   기록이 바뀔 때마다 전체 상태를 집에 있는 맥으로 보낸다(https + 토큰, 집 공유기 안에서만 닿는다).
+   주소·토큰은 코드에 없다 — 이 저장소는 공개라서, 설정 문자열("gh-sync:...")을 앱의 아무 입력칸에
+   붙여 넣으면 localStorage(ml_sync_cfg)에만 저장된다. 집 밖이거나 맥이 꺼져 있으면 조용히 실패하고
+   다음에 앱을 열거나 기록을 고칠 때 다시 보낸다. 아이클라우드 백업 버튼은 그대로 남는다. */
+(function () {
+  var KEYS = { ml_logs: 'logs', ml_injm: 'injM', ml_goals: 'goals', ml_meds: 'meds' };
+  var CFG = 'ml_sync_cfg', DIRTY = 'ml_sync_dirty', LAST = 'ml_sync_last';
+  var timer = null, busy = false, lastTry = 0, announced = false;
+
+  function cfg() { try { return JSON.parse(localStorage.getItem(CFG) || 'null'); } catch (e) { return null; } }
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.setAttribute('style', [
+      'position:fixed', 'left:50%', 'bottom:calc(84px + env(safe-area-inset-bottom))', 'transform:translateX(-50%)',
+      'z-index:99998', 'background:#253A82', 'color:#fff', 'padding:10px 16px', 'border-radius:999px',
+      'font-size:13px', 'font-weight:600', 'line-height:1.4', 'white-space:nowrap',
+      'box-shadow:0 4px 16px rgba(0,0,0,.18)', 'pointer-events:none',
+      'font-family:\"Wanted Sans Variable\",\"Wanted Sans\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif'
+    ].join(';'));
+    t.textContent = msg; document.body.appendChild(t);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2600);
+  }
+  function call(c, path, body) {
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var to = setTimeout(function () { if (ctl) ctl.abort(); }, 4000);
+    var opt = { method: body ? 'POST' : 'GET', headers: { Authorization: 'Bearer ' + c.token }, cache: 'no-store' };
+    if (ctl) opt.signal = ctl.signal;
+    if (body) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+    return fetch(c.url + path, opt).then(function (r) {
+      clearTimeout(to); if (!r.ok) throw new Error('http ' + r.status); return r.json();
+    }, function (e) { clearTimeout(to); throw e; });
+  }
+  function snapshot() {
+    var out = {};
+    for (var k in KEYS) { try { out[KEYS[k]] = JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { out[KEYS[k]] = null; } }
+    out.logs = out.logs || {}; out.injM = out.injM || {}; out.meds = out.meds || [];
+    out.exportedAt = new Date().toISOString();
+    return out;
+  }
+  /* 맥에서 온 변경(약 목록 통째 교체 · 체중은 없는 날짜만 추가)을 저장소에 쓰고 새로 고친다.
+     logs 는 절대 받지 않는다 — 폰의 기록이 정본이다. */
+  function applyPending(c, p) {
+    if (!p || !p.id) return Promise.resolve(false);
+    var changed = false;
+    if (Array.isArray(p.meds)) { rawSet('ml_meds', JSON.stringify(p.meds)); changed = true; }
+    if (p.injM_add && typeof p.injM_add === 'object') {
+      var cur = {}; try { cur = JSON.parse(localStorage.getItem('ml_injm') || '{}') || {}; } catch (e) {}
+      for (var d in p.injM_add) { if (!cur[d]) { cur[d] = p.injM_add[d]; changed = true; } }
+      rawSet('ml_injm', JSON.stringify(cur));
+    }
+    return call(c, '/ack', { id: p.id }).then(function () {
+      if (changed) { rawSet(DIRTY, '1'); toast('맥에서 바뀐 내용을 받았어요'); setTimeout(function () { location.reload(); }, 900); }
+      return changed;
+    });
+  }
+  function sync() {
+    var c = cfg(); if (!c || busy) return;
+    var now = Date.now(); if (now - lastTry < 15000) return;   // 집 밖에서 헛요청을 줄인다
+    lastTry = now; busy = true;
+    call(c, '/pending').then(function (p) { return applyPending(c, p); }).then(function (reloading) {
+      if (reloading || localStorage.getItem(DIRTY) !== '1') return;
+      return call(c, '/push', snapshot()).then(function () {
+        rawSet(DIRTY, '0'); rawSet(LAST, new Date().toISOString());
+        if (!announced) { announced = true; toast('맥에 저장됐어요'); }
+      });
+    }).catch(function () {}).then(function () { busy = false; });
+  }
+  function schedule() { clearTimeout(timer); timer = setTimeout(function () { lastTry = 0; sync(); }, 3000); }
+
+  /* 바뀐 걸 알아채는 방법 — 저장 함수를 가로채지 않고 **내용 지문을 3초마다 비교**한다.
+     (처음엔 Storage.prototype.setItem 을 감쌌는데, 헤드 스크립트가 이미 localStorage.setItem 을 덮어쓰고
+     있어 엔진마다 어느 쪽이 불리는지가 달랐다 — Chromium 에선 감지가 안 됐다. 지문 비교는 엔진과 무관하다.) */
+  function rawSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function sig() {
+    var h = 5381, n = 0;
+    for (var k in KEYS) {
+      var v = localStorage.getItem(k) || ''; n += v.length;
+      for (var i = 0; i < v.length; i += 7) h = ((h << 5) + h + v.charCodeAt(i)) | 0;   // 7자 간격 표본 — 175KB 도 1ms 안쪽
+    }
+    return n + ':' + h;
+  }
+  var SIG = 'ml_sync_sig';
+  function watch() {
+    if (!cfg() || document.visibilityState !== 'visible') return;
+    var now = sig();
+    if (localStorage.getItem(SIG) !== now) { rawSet(SIG, now); rawSet(DIRTY, '1'); schedule(); }
+  }
+  setInterval(watch, 3000);
+
+  /* 설정: "gh-sync:<base64 JSON {url,token}>" 를 아무 입력칸에 붙여 넣으면 저장된다. "gh-sync:off" 는 해제. */
+  document.addEventListener('paste', function (e) {
+    var t = ''; try { t = (e.clipboardData || window.clipboardData).getData('text') || ''; } catch (x) {}
+    t = t.trim(); if (t.indexOf('gh-sync:') !== 0) return;
+    e.preventDefault(); e.stopPropagation();
+    var arg = t.slice(8);
+    if (arg === 'off') { localStorage.removeItem(CFG); toast('맥 동기화를 껐어요'); return; }
+    try {
+      var c = JSON.parse(atob(arg));
+      if (!/^https:\/\//.test(c.url) || !c.token) throw new Error('bad');
+      rawSet(CFG, JSON.stringify({ url: c.url.replace(/\/+$/, ''), token: c.token }));
+      rawSet(DIRTY, '1'); announced = false; lastTry = 0;
+      toast('맥 동기화를 설정했어요'); setTimeout(sync, 800);
+    } catch (x) { toast('설정 문자열이 올바르지 않아요'); }
+  }, true);
+
+  window.addEventListener('load', function () { setTimeout(sync, 1500); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { lastTry = 0; sync(); } });
+})();
 </script>
 </body>
 </html>

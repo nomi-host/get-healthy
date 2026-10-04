@@ -188,17 +188,17 @@ react-dom/cjs/react-dom-client.production.js:
   var timer = null, busy = false, lastTry = 0, announced = false;
 
   function cfg() { try { return JSON.parse(localStorage.getItem(CFG) || 'null'); } catch (e) { return null; } }
-  function toast(msg) {
+  function toast(msg, ms) {
     var t = document.createElement('div');
     t.setAttribute('style', [
       'position:fixed', 'left:50%', 'bottom:calc(84px + env(safe-area-inset-bottom))', 'transform:translateX(-50%)',
       'z-index:99998', 'background:#253A82', 'color:#fff', 'padding:10px 16px', 'border-radius:999px',
-      'font-size:13px', 'font-weight:600', 'line-height:1.4', 'white-space:nowrap',
+      'font-size:13px', 'font-weight:600', 'line-height:1.4', 'max-width:88vw', 'text-align:center',
       'box-shadow:0 4px 16px rgba(0,0,0,.18)', 'pointer-events:none',
       'font-family:\"Wanted Sans Variable\",\"Wanted Sans\",\"Apple SD Gothic Neo\",\"Noto Sans KR\",sans-serif'
     ].join(';'));
     t.textContent = msg; document.body.appendChild(t);
-    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2600);
+    setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, ms || 2600);
   }
   function call(c, path, body) {
     var ctl = ('AbortController' in window) ? new AbortController() : null;
@@ -243,7 +243,7 @@ react-dom/cjs/react-dom-client.production.js:
         rawSet(DIRTY, '0'); rawSet(LAST, new Date().toISOString());
         if (!announced) { announced = true; toast('맥에 저장됐어요'); }
       });
-    }).catch(function () {}).then(function () { busy = false; });
+    }).catch(function (e) { rawSet('ml_sync_err', new Date().toISOString() + ' ' + (e && (e.name + ': ' + e.message))); }).then(function () { busy = false; });
   }
   function schedule() { clearTimeout(timer); timer = setTimeout(function () { lastTry = 0; sync(); }, 3000); }
 
@@ -274,12 +274,21 @@ react-dom/cjs/react-dom-client.production.js:
     e.preventDefault(); e.stopPropagation();
     var arg = t.slice(8);
     if (arg === 'off') { localStorage.removeItem(CFG); toast('맥 동기화를 껐어요'); return; }
+    if (arg === 'test') {   // 진단: 인증 없는 /ping → 인증 있는 /pending 순으로 불러 결과를 화면에 띄운다
+      var tc = cfg(); if (!tc) { toast('설정이 없어요'); return; }
+      var t0 = Date.now();
+      fetch(tc.url + '/ping', { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (x) {
+        return call(tc, '/pending').then(function (p) { toast('연결 OK · ' + (Date.now() - t0) + 'ms · 대기 ' + (p && p.id ? '있음' : '없음'), 7000); });
+      }).catch(function (e) { toast('실패 · ' + (e && (e.name + ': ' + e.message)) + ' · ' + (Date.now() - t0) + 'ms', 9000); });
+      return;
+    }
     try {
       var c = JSON.parse(atob(arg));
       if (!/^https:\/\//.test(c.url) || !c.token) throw new Error('bad');
       rawSet(CFG, JSON.stringify({ url: c.url.replace(/\/+$/, ''), token: c.token }));
       rawSet(DIRTY, '1'); announced = false; lastTry = 0;
       toast('맥 동기화를 설정했어요'); setTimeout(sync, 800);
+      setTimeout(function () { if (localStorage.getItem(DIRTY) === '1' && localStorage.getItem('ml_sync_err')) toast('맥 연결 실패 · ' + localStorage.getItem('ml_sync_err').slice(25), 9000); }, 7000);
     } catch (x) { toast('설정 문자열이 올바르지 않아요'); }
   }, true);
 

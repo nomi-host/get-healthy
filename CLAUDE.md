@@ -187,7 +187,9 @@ Chromium 은 인스턴스 대입을 저장소 키(`"setItem"`)로 넣어 버리�
 - **주소·토큰은 코드에 넣지 않습니다(공개 저장소).** 설정 문자열 `gh-sync:<base64 {url,token}>` 을 앱의
   아무 입력칸에 붙여 넣으면 `localStorage.ml_sync_cfg` 에만 저장됩니다. `gh-sync:off` 는 해제.
 - 맥 → 앱 방향은 `GET /pending` 으로 받습니다: `meds` 는 통째 교체, `injM_add` 는 없는 날짜만 추가,
-  **`logs` 는 절대 받지 않습니다**(폰이 정본).
+  **`logs` 는 통째로 받지 않습니다**(폰이 정본). 대신 `logs_patch`(v2, 2026-10-05)로 **날짜별 덧붙이기**만 받습니다 —
+  증상·복약 체크는 없는 것만 추가, 강도는 비어 있을 때만, 메모는 뒤에 붙임. 기존 값은 덮어쓰지 않음.
+  앱은 `/pending?v=2` 로 자기 버전을 알리고, 서버는 pending 의 `requires` 보다 낮은 앱에는 주지 않습니다.
 - 검증: Chromium 은 `--disable-features=LocalNetworkAccessChecks` 가 있어야 사설망 요청이 나갑니다.
   WebKit(Playwright)은 미신뢰 인증서로 POST 가 멈추므로 서버의 테스트 모드
   (`GH_SYNC_TEST_ORIGIN=http://app.test`, 127.0.0.1:8897 평문)로 요청 로직만 따로 확인합니다.

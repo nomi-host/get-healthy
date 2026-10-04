@@ -228,6 +228,25 @@ react-dom/cjs/react-dom-client.production.js:
       for (var d in p.injM_add) { if (!cur[d]) { cur[d] = p.injM_add[d]; changed = true; } }
       rawSet('ml_injm', JSON.stringify(cur));
     }
+    /* 일일 기록은 통째로 받지 않는다(폰이 정본). 대신 **날짜별 덧붙이기**만 받는다 —
+       증상·복약 체크는 없는 것만 추가, 강도는 비어 있을 때만, 메모는 같은 문장이 없을 때 뒤에 붙인다.
+       이미 있는 값은 절대 덮어쓰지 않고, 다른 날짜는 건드리지 않는다. */
+    if (p.logs_patch && typeof p.logs_patch === 'object') {
+      var logs = {}; try { logs = JSON.parse(localStorage.getItem('ml_logs') || '{}') || {}; } catch (e) {}
+      for (var day in p.logs_patch) {
+        var add = p.logs_patch[day] || {}, cur2 = logs[day] || { symptoms: [], appetite: null, bowel: null, period: null, sleep: null, sleepQuality: null, nap: false, energy: null, special: null, meds: [], bedtime: null, notes: '' };   // 없는 날은 앱이 만드는 빈 기록과 같은 모양으로
+        ['symptoms', 'meds'].forEach(function (f) {
+          if (!Array.isArray(add[f])) return;
+          var arr = Array.isArray(cur2[f]) ? cur2[f].slice() : [];
+          add[f].forEach(function (x) { if (arr.indexOf(x) === -1) { arr.push(x); changed = true; } });
+          cur2[f] = arr;
+        });
+        if (add.symptomLv) { var lv = cur2.symptomLv || {}; for (var k2 in add.symptomLv) { if (lv[k2] == null) { lv[k2] = add.symptomLv[k2]; changed = true; } } cur2.symptomLv = lv; }
+        if (add.notes) { var n0 = (cur2.notes || '').trim(); if (n0.indexOf(add.notes) === -1) { cur2.notes = n0 ? n0 + '\n' + add.notes : add.notes; changed = true; } }
+        logs[day] = cur2;
+      }
+      rawSet('ml_logs', JSON.stringify(logs));
+    }
     return call(c, '/ack', { id: p.id }).then(function () {
       if (changed) { rawSet(DIRTY, '1'); toast('맥에서 바뀐 내용을 받았어요'); setTimeout(function () { location.reload(); }, 900); }
       return changed;
@@ -237,7 +256,7 @@ react-dom/cjs/react-dom-client.production.js:
     var c = cfg(); if (!c || busy) return;
     var now = Date.now(); if (now - lastTry < 15000) return;   // 집 밖에서 헛요청을 줄인다
     lastTry = now; busy = true;
-    call(c, '/pending').then(function (p) { return applyPending(c, p); }).then(function (reloading) {
+    call(c, '/pending?v=2').then(function (p) { return applyPending(c, p); }).then(function (reloading) {
       if (reloading || localStorage.getItem(DIRTY) !== '1') return;
       return call(c, '/push', snapshot()).then(function () {
         rawSet(DIRTY, '0'); rawSet(LAST, new Date().toISOString());
@@ -278,7 +297,7 @@ react-dom/cjs/react-dom-client.production.js:
       var tc = cfg(); if (!tc) { toast('설정이 없어요'); return; }
       var t0 = Date.now();
       fetch(tc.url + '/ping', { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (x) {
-        return call(tc, '/pending').then(function (p) { toast('연결 OK · ' + (Date.now() - t0) + 'ms · 대기 ' + (p && p.id ? '있음' : '없음'), 7000); });
+        return call(tc, '/pending?v=2').then(function (p) { toast('연결 OK · ' + (Date.now() - t0) + 'ms · 대기 ' + (p && p.id ? '있음' : '없음'), 7000); });
       }).catch(function (e) { toast('실패 · ' + (e && (e.name + ': ' + e.message)) + ' · ' + (Date.now() - t0) + 'ms', 9000); });
       return;
     }

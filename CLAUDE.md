@@ -191,6 +191,8 @@ Chromium 은 인스턴스 대입을 저장소 키(`"setItem"`)로 넣어 버리�
   증상·복약 체크는 없는 것만 추가, 강도는 비어 있을 때만, 메모는 뒤에 붙임. 기존 값은 덮어쓰지 않음.
   **v3(2026-10-12)**: `sleep`(수면 시간 구간)·`bedtime`(잠든 시각)도 받습니다 — 그 날짜 값이 비어 있을 때만.
   앱은 `/pending?v=3` 로 자기 버전을 알리고, 서버는 pending 의 `requires` 보다 낮은 앱에는 주지 않습니다.
+  **v4(2026-11-09, 본인 지시)**: 본인이 맥(Claude)에게 대화로 말한 값은 **덮어씁니다** — `set`(sleep·sleepQuality·nap·energy·appetite·bedtime·neckPain만)과
+  `symptoms_remove`(증상 체크 해제). 맥 쪽은 `health/app_queue.py --set 항목=값 --unset 증상`. 앱은 `/pending?v=4`.
 - 검증: Chromium 은 `--disable-features=LocalNetworkAccessChecks` 가 있어야 사설망 요청이 나갑니다.
   WebKit(Playwright)은 미신뢰 인증서로 POST 가 멈추므로 서버의 테스트 모드
   (`GH_SYNC_TEST_ORIGIN=http://app.test`, 127.0.0.1:8897 평문)로 요청 로직만 따로 확인합니다.

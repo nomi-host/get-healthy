@@ -244,6 +244,16 @@ react-dom/cjs/react-dom-client.production.js:
         if (add.symptomLv) { var lv = cur2.symptomLv || {}; for (var k2 in add.symptomLv) { if (lv[k2] == null) { lv[k2] = add.symptomLv[k2]; changed = true; } } cur2.symptomLv = lv; }
         ['sleep', 'bedtime'].forEach(function (f) { if (add[f] != null && cur2[f] == null) { cur2[f] = add[f]; changed = true; } });   // v3: 수면 시간·잠든 시각 — 비어 있을 때만
         if (add.notes) { var n0 = (cur2.notes || '').trim(); if (n0.indexOf(add.notes) === -1) { cur2.notes = n0 ? n0 + '\n' + add.notes : add.notes; changed = true; } }
+        /* v4(2026-11-09): 본인이 맥(Claude)에게 말한 값은 **덮어쓴다** — set 은 아래 항목만, symptoms_remove 는 체크 해제. */
+        if (add.set && typeof add.set === 'object') {
+          ['sleep', 'sleepQuality', 'nap', 'energy', 'appetite', 'bedtime', 'neckPain'].forEach(function (f) {
+            if (Object.prototype.hasOwnProperty.call(add.set, f) && JSON.stringify(cur2[f]) !== JSON.stringify(add.set[f])) { cur2[f] = add.set[f]; changed = true; }
+          });
+        }
+        if (Array.isArray(add.symptoms_remove) && Array.isArray(cur2.symptoms)) {
+          var kept = cur2.symptoms.filter(function (x) { return add.symptoms_remove.indexOf(x) === -1; });
+          if (kept.length !== cur2.symptoms.length) { cur2.symptoms = kept; changed = true; }
+        }
         logs[day] = cur2;
       }
       rawSet('ml_logs', JSON.stringify(logs));
@@ -257,7 +267,7 @@ react-dom/cjs/react-dom-client.production.js:
     var c = cfg(); if (!c || busy) return;
     var now = Date.now(); if (now - lastTry < 15000) return;   // 집 밖에서 헛요청을 줄인다
     lastTry = now; busy = true;
-    call(c, '/pending?v=3').then(function (p) { return applyPending(c, p); }).then(function (reloading) {
+    call(c, '/pending?v=4').then(function (p) { return applyPending(c, p); }).then(function (reloading) {
       if (reloading || localStorage.getItem(DIRTY) !== '1') return;
       return call(c, '/push', snapshot()).then(function () {
         rawSet(DIRTY, '0'); rawSet(LAST, new Date().toISOString());
